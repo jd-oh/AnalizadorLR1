@@ -12,10 +12,10 @@ import java.util.ArrayList;
  * @author Juan David Osorio y Jose Luis Beltrán
  */
 public class Estado {
-    private char identificador;
+    private int identificador;
     private ArrayList<Produccion> conjuntoProduccion;
 
-    public Estado(char identificador, ArrayList<Produccion> conjuntoProduccion) {
+    public Estado(int identificador, ArrayList<Produccion> conjuntoProduccion) {
         this.identificador = identificador;
         this.conjuntoProduccion = conjuntoProduccion;
     }
@@ -33,7 +33,7 @@ public class Estado {
     
     @Override
     public String toString() {
-        return "Estado "+identificador+": "+conjuntoProduccion;
+        return "Estado I-"+identificador+": "+conjuntoProduccion;
     }
     
 }

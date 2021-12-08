@@ -34,21 +34,26 @@ public class Gramatica {
      * Método que asigna el conjunto producción del archivo leído al del objeto
      * @param rutaArchivo la ruta del archivo que se leerá
      */
-    public void cargarConjuntoProduccionJSON(String rutaArchivo) {
+    public Gramatica cargarConjuntoProduccionJSON(String rutaArchivo) {
 
         ControlJSON controlJSON = new ControlJSON();
-        Gramatica gra = controlJSON.leerGramatica(rutaArchivo);
-        this.conjuntoProduccion=gra.getConjuntoProduccion();
- 
+        
+        Gramatica gramatica = controlJSON.leerGramatica(rutaArchivo);
+        
+        return gramatica;
     }
     
-    public void analizar(String rutaArchivo){
-        cargarConjuntoProduccionJSON(rutaArchivo);
+    
+    public void extenderGramatica(String rutaArchivo){
         
+        Gramatica gramatica=cargarConjuntoProduccionJSON(rutaArchivo);
+        
+        String izquierda=gramatica.getConjuntoProduccion().get(0).getIzquierda();
+        
+        gramatica.getConjuntoProduccion().add(0, new Produccion(izquierda+"'", izquierda));
+        this.conjuntoProduccion=gramatica.getConjuntoProduccion();
         
     }
-
-    
 
     @Override
     public String toString() {
