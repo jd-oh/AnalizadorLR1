@@ -27,47 +27,159 @@ public class AnalizadorLR1 {
         gramaticaExtendida.extenderGramatica(rutaArchivo);
     }
 
-    public void analizarLR1() {
-
-    }
-
     public void crearEstadoInicial() {
 
-        Estado estado = new Estado(0, new ArrayList<Produccion>());
+        Estado estado = new Estado(0, new ArrayList<Produccion>(), null);
 
         String inicialIzquierda = gramaticaExtendida.getConjuntoProduccion().get(0).getIzquierda();
         String inicialDerecha = "." + gramaticaExtendida.getConjuntoProduccion().get(0).getDerecha() + ",$";
         Produccion produccionInicial = new Produccion(inicialIzquierda, inicialDerecha);
         guardarProduccionEstado(estado, produccionInicial);
-        String[] inicialDividida = inicialDerecha.split("");
+
+        AnalizarCaracterPosteriorPunto(produccionInicial, estado);
+
+        estados.add(estado);
+
+    }
+
+    private void AnalizarCaracterPosteriorPunto(Produccion produccionPadre, Estado estado) {
+
+        String[] produccionPadreDividida = produccionPadre.getDerecha().split("");
 
         char caracterPosteriorPunto = ' ';
 
-        for (int j = 0; j < inicialDividida.length; j++) {
-            if (inicialDividida[j].equals(".")) {
+        for (int j = 0; j < produccionPadreDividida.length; j++) {
+            if (produccionPadreDividida[j].equals(".")) {
 
-                String caracterEncontrado = inicialDividida[j + 1];
+                String caracterEncontrado = produccionPadreDividida[j + 1];
                 char[] caracterChar = caracterEncontrado.toCharArray();
                 caracterPosteriorPunto = caracterChar[0];
                 break;
             }
         }
 
-        if (caracterPosteriorPunto == ',') {
-
-        }
-
+//        if (caracterPosteriorPunto == ',') {
+//
+//        }
         if (Character.isUpperCase(caracterPosteriorPunto)) {
 
-            String ultimos = ultimosProduccion(produccionInicial);
+            String ultimos = ultimosProduccion(produccionPadre);
             buscarCaracterEnConjuntoProduccion(caracterPosteriorPunto, estado, ultimos);
 
         }
+    }
 
-        estados.add(estado);
+    public void analizarLR1() {
+        crearEstadoInicial();
+        //crearNuevoEstado();
+    }
+
+    public void crearNuevoEstado(char letra, Estado estadoOrigen, int identificador) {
+
+        ArrayList<Produccion> conjProduccion = estadoOrigen.getConjuntoProduccion();
+        ArrayList<Produccion> tempQueCumplen = new ArrayList<>();
+        Estado nuevoEstado = new Estado(identificador, new ArrayList<Produccion>(), new Transicion(estadoOrigen, Character.toString(letra)));
+
+        for (Produccion produccion : conjProduccion) {
+
+            String izquierda = produccion.getIzquierda();
+            String derecha = produccion.getDerecha();
+            char[] derechaDividido = derecha.toCharArray();
+
+            for (int i = 0; i < derechaDividido.length; i++) {
+
+                int posicionPunto = 0;
+                char derechaAlPunto = ' ';
+                int posicionComa = 0;
+                String caracter = Character.toString(derechaDividido[i]);
+
+                if (caracter.equals(".") && derechaDividido[i + 1] != ',') {
+
+                    if (derechaDividido[i + 1] == letra) {
+
+                        derechaAlPunto = letra;
+                        derechaDividido[i] = derechaAlPunto;
+                        derechaDividido[i + 1] = '.';
+                        String derechaUnida = unirArregloDeArray(derechaDividido);
+
+                        Produccion produccionResultante = new Produccion(izquierda, derechaUnida);
+                        tempQueCumplen.add(produccionResultante);
+                        break;
+
+                    } else {
+                        continue;
+                    }
+
+                } else //if(caracter.equals(".") && derechaDividido[i+1]==',')
+                {
+
+                }
+            }
+
+        }
+
+        for (Produccion produccion : tempQueCumplen) {
+            System.out.println("A");
+            guardarProduccionEstado(nuevoEstado, produccion);
+
+        }
+        estados.add(nuevoEstado);
 
     }
 
+    private String unirArregloDeArray(char[] arregloChar) {
+        String union = "";
+        for (char c : arregloChar) {
+            union += c;
+        }
+        return union;
+    }
+
+    /**
+     * Se utiliza si después del caracter a buscar no hay nada (No hay primeros
+     * para sacar). Se pondrá los mismos ultimos del padre.
+     *
+     * @param produccion produccion padre.
+     * @return
+     */
+    public String ultimosProduccion(Produccion produccion) {
+        String[] derechaDividida = produccion.getDerecha().split(",");
+        String ultimos = derechaDividida[1];
+
+        return ultimos;
+    }
+
+    /**
+     * Busca dentro de la grámatica el caracter, que debe
+     *
+     * @param simbolo
+     * @param estado
+     * @param ultimos
+     */
+    public void buscarCaracterEnConjuntoProduccion(Character simbolo, Estado estado, String ultimos) {
+
+        String simboloStr = simbolo.toString();
+        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
+
+            if (produccion.getIzquierda().equals(simboloStr)) {
+
+                String izquierda = produccion.getIzquierda();
+                String derecha = "." + produccion.getDerecha() + "," + ultimos;
+                Produccion nuevaProduccion = new Produccion(izquierda, derecha);
+                analizarEstado(nuevaProduccion, estado);
+                guardarProduccionEstado(estado, nuevaProduccion);
+            }
+        }
+
+    }
+
+    /**
+     * Analiza la produccion para saber que le sigue al punto y así traer más
+     * producciones (si es mayuscula)
+     *
+     * @param produccion
+     * @param estado
+     */
     public void analizarEstado(Produccion produccion, Estado estado) {
         String derecha = produccion.getDerecha();
         String[] produccionDividida = derecha.split("");
@@ -87,10 +199,6 @@ public class AnalizadorLR1 {
             }
         }
 
-        if (caracterPosteriorPunto == ',') {
-
-        }
-
         if (Character.isUpperCase(caracterPosteriorPunto)) {
 
             char[] caracterPosteriorCaracterChar = produccionDividida[posicionCaracterPosteriorPunto + 1].toCharArray();
@@ -105,92 +213,55 @@ public class AnalizadorLR1 {
 
     private String analizarCaracteresPosterioresProduccionPadre(char caracterPosteriorCaracter, String ultimos, Produccion produccion, String[] produccionDividida, int posicionCaracterPosteriorPunto, String derecha, String caracterEncontrado) {
         if (caracterPosteriorCaracter == ',') {
-            
+
             ultimos = ultimosProduccion(produccion);
-            
+
         } else if (Character.isUpperCase(caracterPosteriorCaracter)) {
-            
+
             ultimos = primerosProduccionStr(produccionDividida[posicionCaracterPosteriorPunto + 1], new ArrayList<>());
-            
+
         } else {
             String[] produccionDivididaPorComa = derecha.split(",");
             String izquierdaDeComa = produccionDivididaPorComa[0];
-            
+
             String[] izquierdaDeComaDivididaPorCaracter = izquierdaDeComa.split(caracterEncontrado);
-            
+
             String derechaDeCaracter = izquierdaDeComaDivididaPorCaracter[1];
             char[] caracteresDerecha = derechaDeCaracter.toCharArray();
-            
+
             for (int i = 0; i < caracteresDerecha.length; i++) {
                 if (!Character.isUpperCase(caracteresDerecha[i])) {
-                    
+
                     ultimos += Character.toString(caracteresDerecha[i]);
-                    
+
                 }
             }
         }
         return ultimos;
     }
 
-    public String ultimosProduccion(Produccion produccion) {
-        String[] derechaDividida = produccion.getDerecha().split(",");
-        String ultimos = derechaDividida[1];
+    private String primerosProduccionStr(String caracterABuscar, ArrayList<String> primeros) {
+        ArrayList<String> primerosStr = primerosProduccion(caracterABuscar, primeros);
+        String unir = "";
 
-        return ultimos;
-    }
-
-    public void buscarCaracterEnConjuntoProduccion(Character simbolo, Estado estado, String ultimos) {
-
-        String simboloStr = simbolo.toString();
-        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
-
-            if (produccion.getIzquierda().equals(simboloStr)) {
-
-                String izquierda = produccion.getIzquierda();
-                String derecha = "." + produccion.getDerecha() +","+ ultimos;
-                Produccion nuevaProduccion = new Produccion(izquierda, derecha);
-                analizarEstado(nuevaProduccion, estado);
-                guardarProduccionEstado(estado, nuevaProduccion);
+        for (int i = 0; i < primerosStr.size(); i++) {
+            if (i == 0) {
+                unir = primerosStr.get(i);
+            } else {
+                unir += "|" + primerosStr.get(i);
             }
+
         }
 
-    }
-
-    public ArrayList<Produccion> buscarCaracterEnConjuntoProduccion(Character simbolo) {
-        ArrayList<Produccion> producciones = new ArrayList<>();
-        String simboloStr = simbolo.toString();
-        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
-
-            if (produccion.getIzquierda().equals(simboloStr)) {
-                producciones.add(produccion);
-
-            }
-        }
-        return producciones;
-    }
-
-    public int buscarCaracterEnConjuntoProduccionNumVeces(Character simbolo) {
-        String simboloStr = simbolo.toString();
-        int cont = 0;
-        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
-
-            if (produccion.getIzquierda().equals(simboloStr)) {
-
-                cont++;
-            }
-        }
-        return cont;
-    }
-
-    private void guardarProduccionEstado(Estado estado, Produccion produccion) {
-        estado.getConjuntoProduccion().add(produccion);
+        return unir;
     }
 
     /**
      * Método que recorre una producción, verifica todos sus primeros y
      * finalmente los retorna
      *
-     * @param produccion la producción de la cual se obtendrán sus primeros.
+     * @param caracterABuscar a
+     * @param primeros
      * @return arreglo de String con los primeros de la producción.
      */
     public ArrayList<String> primerosProduccion(String caracterABuscar, ArrayList<String> primeros) {
@@ -219,20 +290,17 @@ public class AnalizadorLR1 {
         return primeros;
     }
 
-    private String primerosProduccionStr(String caracterABuscar, ArrayList<String> primeros) {
-        ArrayList<String> primerosStr = primerosProduccion(caracterABuscar, primeros);
-        String unir = "";
+    public ArrayList<Produccion> buscarCaracterEnConjuntoProduccion(Character simbolo) {
+        ArrayList<Produccion> producciones = new ArrayList<>();
+        String simboloStr = simbolo.toString();
+        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
 
-        for (int i = 0; i < primerosStr.size(); i++) {
-            if (i == 0) {
-                unir = primerosStr.get(i);
-            } else {
-                unir += "|" + primerosStr.get(i);
+            if (produccion.getIzquierda().equals(simboloStr)) {
+                producciones.add(produccion);
+
             }
-
         }
-
-        return unir;
+        return producciones;
     }
 
     /**
@@ -300,23 +368,41 @@ public class AnalizadorLR1 {
         return null;
     }
 
+//    public int buscarCaracterEnConjuntoProduccionNumVeces(Character simbolo) {
+//        String simboloStr = simbolo.toString();
+//        int cont = 0;
+//        for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
+//
+//            if (produccion.getIzquierda().equals(simboloStr)) {
+//
+//                cont++;
+//            }
+//        }
+//        return cont;
+//    }
+    private void guardarProduccionEstado(Estado estado, Produccion produccion) {
+        estado.getConjuntoProduccion().add(produccion);
+    }
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
         AnalizadorLR1 ana = new AnalizadorLR1(new Gramatica(new ArrayList<>()), new ArrayList<Estado>());
-        String rutaArchivo = "C:\\Users\\jdavi\\Desktop\\Proyecto Lenguajes\\Prueba1.json";
+        String rutaArchivo = "C:\\Users\\jdavi\\Desktop\\Proyecto Lenguajes\\Parcial2.json";
         ana.extenderGramatica(rutaArchivo);
         System.out.println(ana.gramaticaExtendida);
 
-        ArrayList<String> primeros = new ArrayList<>();
+        //ArrayList<String> primeros = new ArrayList<>();
 //        Produccion produccion = ana.gramaticaExtendida.getConjuntoProduccion().get(4);
         // ana.primerosProduccion(produccion.getIzquierda(), primeros);
         //System.out.println(primeros);
-       // System.out.println(ana.primerosProduccionStr(produccion.getIzquierda(), primeros));
-
+        // System.out.println(ana.primerosProduccionStr(produccion.getIzquierda(), primeros));
         ana.crearEstadoInicial();
+        ArrayList<Estado> estad = ana.estados;
+
+        //ana.crearNuevoEstado('(', estad.get(0), 1);
         System.out.println(ana.estados);
 
     }

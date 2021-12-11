@@ -5,6 +5,7 @@
  */
 package modelo;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -14,10 +15,12 @@ import java.util.ArrayList;
 public class Estado {
     private int identificador;
     private ArrayList<Produccion> conjuntoProduccion;
+    private Transicion transiciones;
 
-    public Estado(int identificador, ArrayList<Produccion> conjuntoProduccion) {
+    public Estado(int identificador, ArrayList<Produccion> conjuntoProduccion, Transicion transiciones) {
         this.identificador = identificador;
         this.conjuntoProduccion = conjuntoProduccion;
+        this.transiciones=transiciones;
     }
 
     public Estado() {
@@ -30,6 +33,12 @@ public class Estado {
     public void setConjuntoProduccion(ArrayList<Produccion> conjuntoProduccion) {
         this.conjuntoProduccion = conjuntoProduccion;
     }
+
+    public Transicion getTransicion() {
+        return transiciones;
+    }
+    
+    
     
     @Override
     public String toString() {
