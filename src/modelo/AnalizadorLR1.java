@@ -88,9 +88,9 @@ public class AnalizadorLR1 {
 
             for (int i = 0; i < derechaDividido.length; i++) {
 
-                int posicionPunto = 0;
+
                 char derechaAlPunto = ' ';
-                int posicionComa = 0;
+
                 String caracter = Character.toString(derechaDividido[i]);
 
                 if (caracter.equals(".") && derechaDividido[i + 1] != ',') {
@@ -110,7 +110,7 @@ public class AnalizadorLR1 {
                         continue;
                     }
 
-                } else //if(caracter.equals(".") && derechaDividido[i+1]==',')
+                } else 
                 {
 
                 }
@@ -119,13 +119,31 @@ public class AnalizadorLR1 {
         }
 
         for (Produccion produccion : tempQueCumplen) {
-            System.out.println("A");
+            String derecha = produccion.getDerecha();
+            String[] produccionDividida = derecha.split("");
+
+            String caracterEncontrado = "";
+
+
+            for (int j = 0; j < produccionDividida.length; j++) {
+                if (produccionDividida[j].equals(".")) {
+
+                    caracterEncontrado = produccionDividida[j + 1];
+
+                    char[] caracterChar = caracterEncontrado.toCharArray();
+
+                    break;
+                }
+            }
+
+            analizarEstado(produccion, nuevoEstado);
             guardarProduccionEstado(nuevoEstado, produccion);
 
         }
         estados.add(nuevoEstado);
 
     }
+
 
     private String unirArregloDeArray(char[] arregloChar) {
         String union = "";
@@ -160,7 +178,6 @@ public class AnalizadorLR1 {
 
         String simboloStr = simbolo.toString();
         for (Produccion produccion : gramaticaExtendida.getConjuntoProduccion()) {
-
             if (produccion.getIzquierda().equals(simboloStr)) {
 
                 String izquierda = produccion.getIzquierda();
@@ -204,14 +221,20 @@ public class AnalizadorLR1 {
             char[] caracterPosteriorCaracterChar = produccionDividida[posicionCaracterPosteriorPunto + 1].toCharArray();
             char caracterPosteriorCaracter = caracterPosteriorCaracterChar[0];
 
-            ultimos = analizarCaracteresPosterioresProduccionPadre(caracterPosteriorCaracter, ultimos, produccion, produccionDividida, posicionCaracterPosteriorPunto, derecha, caracterEncontrado);
+            ultimos = analizarCaracteresPosterioresProduccionPadre(produccion, posicionCaracterPosteriorPunto, caracterEncontrado);
 
             buscarCaracterEnConjuntoProduccion(caracterPosteriorPunto, estado, ultimos);
 
         }
     }
 
-    private String analizarCaracteresPosterioresProduccionPadre(char caracterPosteriorCaracter, String ultimos, Produccion produccion, String[] produccionDividida, int posicionCaracterPosteriorPunto, String derecha, String caracterEncontrado) {
+    private String analizarCaracteresPosterioresProduccionPadre(Produccion produccion, int posicionCaracterPosteriorPunto, String caracterEncontrado) {
+        String ultimos = " ";
+        String derecha = produccion.getDerecha();
+        String[] produccionDividida = derecha.split("");
+        char[] caracterPosteriorCaracterChar = produccionDividida[posicionCaracterPosteriorPunto + 1].toCharArray();
+        char caracterPosteriorCaracter = caracterPosteriorCaracterChar[0];
+
         if (caracterPosteriorCaracter == ',') {
 
             ultimos = ultimosProduccion(produccion);
@@ -402,8 +425,22 @@ public class AnalizadorLR1 {
         ana.crearEstadoInicial();
         ArrayList<Estado> estad = ana.estados;
 
-        //ana.crearNuevoEstado('(', estad.get(0), 1);
-        System.out.println(ana.estados);
+        ana.crearNuevoEstado('S', estad.get(0), 1);
+        ana.crearNuevoEstado('(', estad.get(0), 2);
+        ana.crearNuevoEstado('L', estad.get(2), 3);
+        ana.crearNuevoEstado(')', estad.get(3), 4);
+        ana.crearNuevoEstado('S', estad.get(2), 5);
+        ana.crearNuevoEstado('X', estad.get(5), 6);
+        ana.crearNuevoEstado(';', estad.get(5), 7);
+        ana.crearNuevoEstado('S', estad.get(7), 8);
+        ana.crearNuevoEstado('X', estad.get(8), 9);
+        ana.crearNuevoEstado('ø', estad.get(8), 10);
+        
+        
+        for (Estado estado : ana.estados) {
+            System.out.println(estado);
+        }
+        
 
     }
 
