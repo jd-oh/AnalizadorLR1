@@ -25,6 +25,14 @@ public class Estado {
 
     public Estado() {
     }
+
+    public int getIdentificador() {
+        return identificador;
+    }
+
+    public Transicion getTransiciones() {
+        return transiciones;
+    }
     
     public ArrayList<Produccion> getConjuntoProduccion() {
         return conjuntoProduccion;
