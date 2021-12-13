@@ -143,10 +143,15 @@ public class AnalizadorLR1 {
         for (Estado estado : estados) {
 
             if (estado.getConjuntoProduccion().get(0).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(0).getDerecha())) {
-                if (estado.getConjuntoProduccion().get(1).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(1).getDerecha())) {
+                if(estado.getConjuntoProduccion().size()==1){
+                    contador++;
+                }else{
+                    if (estado.getConjuntoProduccion().get(1).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(1).getDerecha())) {
                     contador++;
                     idEstado = estado.getIdentificador();
                 }
+                }
+                
             }
         }
 
