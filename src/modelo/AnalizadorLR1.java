@@ -23,11 +23,10 @@ public class AnalizadorLR1 {
         this.estados = estados;
     }
 
-    
     public void extenderGramatica(String rutaArchivo) {
         gramaticaExtendida.extenderGramatica(rutaArchivo);
     }
-    
+
     /**
      * Crea el estado inicial.
      */
@@ -43,6 +42,7 @@ public class AnalizadorLR1 {
         AnalizarCaracterPosteriorPunto(produccionInicial, estado);
 
         estados.add(estado);
+        transicionar(estado);
 
     }
 
@@ -137,26 +137,78 @@ public class AnalizadorLR1 {
         AnalizarYGuardarProduccionesPorLetraTransicion(tempQueCumplen, nuevoEstado);
         int contador = 0;
         int idEstado = 0;
-        
-            for (Estado estado : estados) {
 
-                if (estado.getConjuntoProduccion().get(0).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(0).getDerecha())) {
-                    if (estado.getConjuntoProduccion().get(1).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(1).getDerecha())) {
-                        contador++;
-                        idEstado = estado.getIdentificador();
-                    }
+        ArreglarPosicionesConjProduccion(nuevoEstado);
+
+        for (Estado estado : estados) {
+
+            if (estado.getConjuntoProduccion().get(0).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(0).getDerecha())) {
+                if (estado.getConjuntoProduccion().get(1).getDerecha().equals(nuevoEstado.getConjuntoProduccion().get(1).getDerecha())) {
+                    contador++;
+                    idEstado = estado.getIdentificador();
                 }
             }
+        }
 
-            if (contador == 0) {
-                estados.add(nuevoEstado);
-            } else {
-                // nuevoEstado.get
-                return "I-" + idEstado;
+        if (contador == 0) {
+            estados.add(nuevoEstado);
+        } else {
+            // nuevoEstado.get
+            return "I-" + idEstado;
 
-            }
-        
+        }
+
+        transicionar(nuevoEstado);
+
         return "Estado guardado con éxito";
+    }
+
+    private void transicionar(Estado nuevoEstado) {
+        int identificador;
+        ArrayList<String> transiciones = new ArrayList<>();
+        for (Produccion produccion : nuevoEstado.getConjuntoProduccion()) {
+
+            String[] derechaDividida = produccion.getDerecha().split("\\.");
+
+            String[] despuesDelPunto = derechaDividida[1].split("");
+            String caracter = despuesDelPunto[0];
+
+
+            if (caracter.equals(",")) {
+                continue;
+            } else {
+                transiciones.add(caracter);
+            }
+
+        }
+//        for (String transicione : transiciones) {
+//            System.out.println("FFFF"+transicione);
+//        }
+        if (transiciones.size() > 0) {
+            for (String transicion : transiciones) {
+                identificador = estados.size();
+                char[] transicionC = transicion.toCharArray();
+                char transicionChar = transicionC[0];
+                crearNuevoEstado(transicionChar, nuevoEstado, identificador);
+            }
+        }
+    }
+
+    /**
+     * Arregla las dos últimas posiciones para que queden en el orden correcto.
+     *
+     * @param nuevoEstado el estado al que se le usará el conjunto produccion
+     * para el proceso
+     */
+    private void ArreglarPosicionesConjProduccion(Estado nuevoEstado) {
+        if (nuevoEstado.getConjuntoProduccion().size() > 2) {
+            int tamaño = nuevoEstado.getConjuntoProduccion().size();
+
+            Produccion p = nuevoEstado.getConjuntoProduccion().get(tamaño - 1);
+            nuevoEstado.getConjuntoProduccion().add(tamaño - 2, p);
+            tamaño = nuevoEstado.getConjuntoProduccion().size();
+            nuevoEstado.getConjuntoProduccion().remove(tamaño - 1);
+        }
     }
 
     /**
@@ -177,7 +229,6 @@ public class AnalizadorLR1 {
 
                     caracterEncontrado = produccionDividida[j + 1];
 
-
                     break;
                 }
             }
@@ -187,7 +238,7 @@ public class AnalizadorLR1 {
 
         }
     }
-    
+
     /**
      * Une en un solo string los arreglos chars
      *
@@ -216,7 +267,7 @@ public class AnalizadorLR1 {
         return ultimos;
     }
 
-/**
+    /**
      * Busca dentro de la grámatica las producciones que existen con el simbolo
      * dado para analizarlas y finalmente guardarlas en el nuevo estado.
      *
@@ -268,15 +319,14 @@ public class AnalizadorLR1 {
 
         if (Character.isUpperCase(caracterPosteriorPunto)) {
 
-
             ultimos = analizarCaracteresPosterioresProduccionPadre(produccion, posicionCaracterPosteriorPunto, caracterEncontrado);
 
             buscarCaracterEnConjuntoProduccion(caracterPosteriorPunto, estado, ultimos);
 
         }
     }
-    
-      /**
+
+    /**
      * Analiza qué hay después del caracter que está después del punto, para
      * agregarlos como ultimos a las producciones hijas Si es mayuscula, traerá
      * los primeros de esa produccion y esos serán los últimos Si es minuscula,
@@ -489,22 +539,21 @@ public class AnalizadorLR1 {
         ana.crearEstadoInicial();
         ArrayList<Estado> estad = ana.estados;
 
-        ana.crearNuevoEstado('S', estad.get(0), 1);
-        ana.crearNuevoEstado('(', estad.get(0), 2);
-        ana.crearNuevoEstado('L', estad.get(2), 3);
-        ana.crearNuevoEstado(')', estad.get(3), 4);
-        ana.crearNuevoEstado('S', estad.get(2), 5);
-        ana.crearNuevoEstado('X', estad.get(5), 6);
-        ana.crearNuevoEstado(';', estad.get(5), 7);
-        ana.crearNuevoEstado('S', estad.get(7), 8);
-        ana.crearNuevoEstado('X', estad.get(8), 9);
-        ana.crearNuevoEstado('ø', estad.get(8), 10);
-        ana.crearNuevoEstado('(', estad.get(7), 11);
-        ana.crearNuevoEstado('L', estad.get(11), 12);
-        ana.crearNuevoEstado(')', estad.get(12), 13);
-        ana.crearNuevoEstado('i', estad.get(11), 14);
+//        ana.crearNuevoEstado('S', estad.get(0), 1);
+//        ana.crearNuevoEstado('(', estad.get(0), 2);
+//        ana.crearNuevoEstado('L', estad.get(2), 3);
+//        ana.crearNuevoEstado(')', estad.get(3), 4);
+//        ana.crearNuevoEstado('S', estad.get(2), 5);
+//        ana.crearNuevoEstado('X', estad.get(5), 6);
+//        ana.crearNuevoEstado(';', estad.get(5), 7);
+//        ana.crearNuevoEstado('S', estad.get(7), 8);
+//        ana.crearNuevoEstado('X', estad.get(8), 9);
+//        ana.crearNuevoEstado('ø', estad.get(8), 10);
+//        ana.crearNuevoEstado('(', estad.get(7), 11);
+//        ana.crearNuevoEstado('L', estad.get(11), 12);
+//        ana.crearNuevoEstado(')', estad.get(12), 13);
+//        ana.crearNuevoEstado('i', estad.get(11), 14);
         //ana.crearNuevoEstado(',', estad.get(13), 15);
-
         for (Estado estado : ana.estados) {
             System.out.println(estado);
         }
