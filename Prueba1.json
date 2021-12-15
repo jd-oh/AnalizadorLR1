@@ -1,0 +1,16 @@
+{
+    "conjuntoProduccion": [
+        {
+            "izquierda": "S",
+            "derecha": "CC"
+        },
+        {
+            "izquierda": "C",
+            "derecha": "aC"
+        },
+        {
+            "izquierda": "C",
+            "derecha": "d"
+        }
+    ]
+}
